@@ -68,7 +68,6 @@ class Drone(Mathfunction):
         self.Wb.integration(Omega_acc)
         self.Euler_rate.update((self.BAV2EAR(self.Euler.now, self.Wb.now)))
         self.P.integration(self.V.pre)
-        self.Euler_rate.pre[1] = -self.Euler_rate.pre[1]
         self.Euler.integration(self.Euler_rate.pre)
         self.R.integration(np.matmul(self.R.now, self.Vee(self.Wb.pre)))
 
@@ -100,7 +99,7 @@ class Drone(Mathfunction):
 
     # ! calculate output acceleration for drone motion from input
     def Drone_Dynamics(self, F, M):
-        acc = F * np.matmul(self.R.now, self.e3) / (self.mQ + 0.005) - self.g * self.e3
+        acc = F * np.matmul(self.R.now, self.e3) / (self.mQ) - self.g * self.e3
         Omega_acc = np.matmul(
             np.linalg.inv(self.I),
             (M - np.cross(self.Wb.now, np.matmul(self.I, self.Wb.now))),
