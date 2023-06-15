@@ -26,14 +26,7 @@ t = 0
 
 while t <= T:
     # コントローラの計算, ドローンの状態を渡す
-    input_acc, input_wb = sample_controller(
-        BigQuad_1.P.now,
-        BigQuad_1.V.now,
-        BigQuad_1.R.now,
-        BigQuad_1.Euler.now,
-        BigQuad_1.Wb.now,
-        BigQuad_1.Euler_rate.now,
-    )
+    input_acc, input_wb = sample_controller(BigQuad_1)
 
     # ドローンへの入力
     BigQuad_1.main(input_acc, input_wb)
