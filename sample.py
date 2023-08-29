@@ -31,5 +31,5 @@ while t <= T:
     # ドローンへの入力
     BigQuad_1.main(input_acc, input_wb)
 
-    # 時間を勧める
+    # 時間を進める
     t += DT

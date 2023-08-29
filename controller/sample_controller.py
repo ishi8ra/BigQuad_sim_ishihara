@@ -41,6 +41,6 @@ class Controller:
 
     def controller(self):
         """
-        ドローンへの入力を計算
+        ドローンへの入力を計算するプログラムを記述
         """
         return self.input_acc, self.input_Wb
