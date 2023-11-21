@@ -1,6 +1,6 @@
 import numpy as np
 from Drone.Drone_model import Drone
-from controller.sample_controller import Controller
+from controller.lqr_controller_suzuki import Lqr_Controller
 
 # シミュレーションステップの間隔[s]
 DT = 0.001
@@ -19,14 +19,15 @@ BigQuad_1 = Drone(dt=DT)
 BigQuad_1.set_initial_state(P, V, R, EULER, W, EULER_RATE, DT)
 
 # コントローラを初期化
-sample_controller = Controller()
-
+lqr_controller = Lqr_Controller(dt=DT)
+lqr_controller.set_reference()
 # シミュレーション時間[s]
 t = 0
 
 while t <= T:
     # コントローラの計算, ドローンの状態を渡す
-    input_acc, input_wb = sample_controller(BigQuad_1)
+    lqr_controller.set_state(BigQuad_1)
+    input_acc, input_wb = lqr_controller.controller()
 
     # ドローンへの入力
     BigQuad_1.main(input_acc, input_wb)

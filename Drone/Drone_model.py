@@ -1,12 +1,10 @@
+from Drone.Inner_controller import Controller_attituede_rate
+from Drone.State import State
+from tools.Mathfunction import Mathfunction
+import numpy as np
 import sys
 
 sys.path.append("../")
-
-import numpy as np
-
-from tools.Mathfunction import Mathfunction
-from Drone.State import State
-from Drone.Inner_controller import Controller_attituede_rate
 
 
 class Drone(Mathfunction):
@@ -22,10 +20,13 @@ class Drone(Mathfunction):
         # * set physical parametor
         self.g = 9.8
         self.mQ = 0.558
+        # self.mQ = 0.424
         self.I = np.array(
-            [[10 ** (-1), 0.0, 0.0], [0.0, 10 ** (-1), 0.0], [0.0, 0.0, 10 ** (-1)]]
+            [[10 ** (-1), 0.0, 0.0], [0.0, 10 ** (-1), 0.0],
+             [0.0, 0.0, 10 ** (-1)]]
         )
-        self.Arm_length = 0.15
+        self.Arm_length = 0.15  # [cm] # 大型
+        # self.Arm_length = 0.19 # [cm] 中型
         self.Hegiht = 0.05
         self.e3 = np.array([0, 0, 1.0])
 
@@ -128,7 +129,7 @@ class Drone(Mathfunction):
         )  # np.array([2.1161e-07, 0.0024, 0.0])
         m4_map = np.array(
             [1.8948e-09, 3.1570e-05, -0.0759]
-        )  #  np.array([2.0210e-07, 0.0024, 0.0])
+        )  # np.array([2.0210e-07, 0.0024, 0.0])
 
         m1_map_torque = np.array([2.5150e-11, 3.9841e-07, -8.5201e-04])
         m2_map_torque = np.array([2.0893e-11, 3.9322e-07, -7.8045e-04])
