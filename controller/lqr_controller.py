@@ -34,7 +34,7 @@ Bl = np.array(
     ]
 )
 
-# 重みの決定   x  xd  β  y  yd γ  z  zd
+# 重みの決定   Q=[x, xd, β, y, yd, γ, z, zd]
 Q = np.diag([1, 1, 1, 1, 1, 1, 1, 1])
 R = np.diag([1, 1, 1])
 
@@ -70,8 +70,8 @@ class Lqr_Controller:
         self.input_acc = 0.0
         self.input_Wb = np.zeros(3)
 
-    def set_dt(self, dt):
-        self.dt = dt
+    # def set_dt(self, dt):
+    #     self.dt = dt
 
     def set_state(self, drone):
         self.P = drone.P.now
@@ -117,24 +117,14 @@ class Lqr_Controller:
         a = ad + g + (g/2)*(self.Euler[1]*self.Euler[1] +
                             self.Euler[2]*self.Euler[2])
 
-        # csvファイルにuの値を書き込む。
-        with open("u.csv", "a") as f:
-            writer = csv.writer(f)
-            writer.writerow(u)
-        with open("P.csv", "a") as f:
-            writer = csv.writer(f)
-            writer.writerow(u)
-
         # nominal acceleraion
         self.input_acc = a
 
-        ox = u[1]
-        oy = u[0]
+        ox = u[1, 0]
+        oy = u[0, 0]
         oz = 0
 
         # calculate input Body angular velocity
         self.input_Wb = np.array([[ox], [oy], [oz]], dtype=object)
-
-        print(self.P)
 
         return self.input_acc, self.input_Wb

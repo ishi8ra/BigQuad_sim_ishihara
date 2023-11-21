@@ -40,5 +40,7 @@ class Controller:
         self.Euler_rateref = Euler_rate
 
     def controller(self):
-
-        # return self.input_acc, self.input_Wb
+        """
+        ドローンへの入力を計算するプログラムを記述
+        """
+        return self.input_acc, self.input_Wb

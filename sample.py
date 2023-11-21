@@ -1,6 +1,7 @@
 import numpy as np
 from Drone.Drone_model import Drone
-from controller.lqr_controller_suzuki import Lqr_Controller
+from controller.lqr_controller import Lqr_Controller
+import csv
 
 # シミュレーションステップの間隔[s]
 DT = 0.001
@@ -34,3 +35,11 @@ while t <= T:
 
     # 時間を進める
     t += DT
+
+    # 位置情報を表示
+    print(BigQuad_1.P.now)
+
+    # csvファイルにBigQuad_1.P.nowを書き込む
+    with open('BigQuad_1_P_now.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(BigQuad_1.P.now)
