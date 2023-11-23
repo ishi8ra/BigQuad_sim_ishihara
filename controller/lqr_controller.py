@@ -115,20 +115,24 @@ class Lqr_Controller:
             ]
         )
 
-        q_div = self.q_now - self.q_ref
-        self.input = -np.dot(self.K, q_div)
-        ad = self.input[2, 0]
-        a = ad + self.g + (self.g/2)*(self.Euler[1]*self.Euler[1] +
-                                      self.Euler[2]*self.Euler[2])
+        q_div = np.array(self.q_now - self.q_ref.squeeze())
+        self.input = -self.K @ q_div
+    # [3rows, 1cols]
 
-        # nominal acceleraion
-        self.input_acc = a
+        # self.input = -np.dot(self.K, q_div)
+        # self.input = -np.dot(self.K, ((self.q_now - self.q_ref.squeeze())))
+        self.uncalculated_Zacc = self.input[2, 0]
+        self.input_Zacc = self.input[2, 0] + self.g + (self.g/2)*(self.Euler[1]*self.Euler[1] +
+                                                                  self.Euler[2]*self.Euler[2])
 
-        ox = self.input[1, 0]
-        oy = self.input[0, 0]
-        oz = 0
+        # nominal acceleration
+        # self.input_acc = a
+
+        wx = self.input[0, 0]
+        wy = self.input[1, 0]
+        wz = 0
 
         # calculate input Body angular velocity
-        self.input_Wb = np.array([ox, oy, oz], dtype=object)
+        self.input_Wb = np.array([wx, wy, wz], dtype=object)
 
-        return self.input_acc, self.input_Wb
+        return self.input_Zacc, self.input_Wb
