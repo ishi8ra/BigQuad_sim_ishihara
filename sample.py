@@ -15,12 +15,17 @@ data_general = {
     'acc': []
 }
 data_input = {
+    'Time': [],
     'input': []
 }
 data_uncalculated_Zacc = {
+    'Time': [],
     'uncalculated_Zacc': []
 }
-data_input_Zacc = {'input_Zacc': []}
+data_input_Zacc = {
+    'Time': [],
+    'input_Zacc': []
+}
 
 # file_names = {
 #     'K': 'csv_just_exported/K_' + current_time + '.csv',
@@ -67,33 +72,40 @@ while t <= T:
     t += DT
 
     # データをデータフレームに追加
-    data_general['Time'].append(t)
-    data_general['P_x'].append(BigQuad_1.P.now[0])
-    data_general['P_y'].append(BigQuad_1.P.now[1])
-    data_general['P_z'].append(BigQuad_1.P.now[2])
-    data_general['acc'].append(input_acc)
-    data_input['input'].append(lqr_controller.input)
-    data_uncalculated_Zacc['uncalculated_Zacc'].append(
-        lqr_controller.uncalculated_Zacc)
-    data_input_Zacc['input_Zacc'].append(lqr_controller.input_Zacc)
+    # data_general['Time'].append(t)
+    # data_general['P_x'].append(BigQuad_1.P.now[0])
+    # data_general['P_y'].append(BigQuad_1.P.now[1])
+    # data_general['P_z'].append(BigQuad_1.P.now[2])
+    # data_general['acc'].append(input_acc)
+
+    # data_input['Time'].append(t)
+    # data_input['input'].append(lqr_controller.input)
+
+    # data_uncalculated_Zacc['Time'].append(t)
+    # data_uncalculated_Zacc['uncalculated_Zacc'].append(
+    #     lqr_controller.uncalculated_Zacc)
+
+    # data_input_Zacc['Time'].append(t)
+    # data_input_Zacc['input_Zacc'].append(lqr_controller.input_Zacc)
 
     # 位置情報を表示
-    print(BigQuad_1.P.now)
+    # print(BigQuad_1.P.now)
 
-df_general = pd.DataFrame(data_general)
-df_general.to_excel('excel_exported/' + current_time + '.xlsx', index=False)
+# df_general = pd.DataFrame(data_general)
+# df_general.to_excel('excel_exported/' + current_time +
+#                     '_T=' + str(T) + '.xlsx', index=False)
 
-df_input = pd.DataFrame(data_input)
-df_input.to_excel('excel_exported/' + current_time +
-                  '_input.xlsx', index=False)
+# df_input = pd.DataFrame(data_input)
+# df_input.to_excel('excel_exported/' + current_time + '_T=' + str(T) +
+#                   '_input.xlsx', index=False)
 
-df_uncalculated_Zacc = pd.DataFrame(data_uncalculated_Zacc)
-df_uncalculated_Zacc.to_excel('excel_exported/' + current_time +
-                              '_uncalculated_Zacc.xlsx', index=False)
+# df_uncalculated_Zacc = pd.DataFrame(data_uncalculated_Zacc)
+# df_uncalculated_Zacc.to_excel('excel_exported/' + current_time + '_T=' + str(T) +
+#                               '_uncalculated_Zacc.xlsx', index=False)
 
-df_input_Zacc = pd.DataFrame(data_input_Zacc)
-df_input_Zacc.to_excel('excel_exported/' + current_time +
-                       '_input_Zacc.xlsx', index=False)
+# df_input_Zacc = pd.DataFrame(data_input_Zacc)
+# df_input_Zacc.to_excel('excel_exported/' + current_time + '_T=' + str(T) +
+#                        '_input_Zacc.xlsx', index=False)
 
 # with open(file_names['P'], 'a') as f:
 #     writer = csv.writer(f)

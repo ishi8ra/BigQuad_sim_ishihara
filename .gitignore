@@ -1,3 +1,8 @@
 __pycache__
 Drone/__pycache__
 tools/__pycache__
+
+# excel_exportedを除外
+excel_exported
+csv_just_exported
+csv_renamed
