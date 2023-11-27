@@ -1,71 +1,6 @@
 import numpy as np
 from tools.Mathfunction import Mathfunction as MF
 from scipy import linalg
-import csv
-import pprint
-
-# 初期設定
-r = 2 / 3  # r(λ)=2/3Lp 長:0.3m
-g = 9.8  # 重力加速度
-
-A = np.array(
-    [
-        [0, 1, 0, 0, 0, 0, 0, 0],
-        [0, 0, g, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, -g, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-    ]
-)
-
-Bl = np.array(
-    [
-        [0, 0, 0],
-        [0, 0, 0],
-        [1, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 1, 0],
-        [0, 0, 0],
-        [0, 0, 1],
-    ]
-)
-
-# 重みの決定   x  xd  β  y  yd γ  z  zd
-#Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
-#Q = np.diag([1, 1, 1, 1, 1, 1, 1, 1])
-#Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
-#Q = np.diag([5, 1, 1, 5, 1, 1, 150, 1])
-
-#重み　決定版
-#Q = np.diag([10, 1, 15, 10, 1, 15, 50, 1])
-#Q = np.diag([5, 1, 1, 5, 1, 1, 20, 1])
-Q = np.diag([15, 1, 50, 15, 1, 50, 80, 1])
-R = np.diag([50, 50, 1])
-
-
-# lqr法
-def lqr(A, B, Q, R):
-    P = linalg.solve_continuous_are(A, B, Q, R)  # Ricatti方程式を解いてる?
-    K = linalg.inv(R).dot(B.T).dot(P)
-    E = linalg.eigvals(A - B.dot(K))
-
-    return P, K, E
-
-
-P, K, E = lqr(A, Bl, Q, R)  # このKはMatlabの結果通りになってる
-
-#P, K, E = control.lqr(A, Bl, Q, R)
-
-# K = np.array([[1, 1.4518, 5.4272, 0, 0, 0, 0, 0], 
-#                [0, 0, 0, -1, -1.4518, 5.4272, 0, 0],
-#                [0, 0, 0, 0, 0, 0, 1, 1.7321]])
-
-# 目標値の設定（7行目は目標の高さz）
-q_ref = np.array([[0], [0], [0], [0], [0], [0], [0.5], [0]])
 
 
 class Lqr_Controller:
@@ -77,6 +12,61 @@ class Lqr_Controller:
         # * initialize input values
         self.input_acc = 0.0
         self.input_Wb = np.zeros(3)
+        # 初期設定
+        self.r = 2 / 3  # r(λ)=2/3Lp 長:0.3m
+        self.g = 9.8  # 重力加速度
+
+        self.A = np.array(
+            [
+                [0, 1, 0, 0, 0, 0, 0, 0],
+                [0, 0, self.g, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, -self.g, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+            ]
+        )
+
+        self.Bl = np.array(
+            [
+                [0, 0, 0],
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 1, 0],
+                [0, 0, 0],
+                [0, 0, 1],
+            ]
+        )
+
+        # 目標値の設定（7行目が目標の高さz）
+        self.q_ref = np.array([[0], [0], [0], [0], [0], [0], [0.5], [0]])
+
+        # 重みの決定   [x  xd  β  y  yd γ  z  zd]
+        # Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
+        # Q = np.diag([1, 1, 1, 1, 1, 1, 1, 1])
+        # Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
+        # Q = np.diag([5, 1, 1, 5, 1, 1, 150, 1])
+
+        # 重み 決定版
+        # Q = np.diag([10, 1, 15, 10, 1, 15, 50, 1])
+        # Q = np.diag([5, 1, 1, 5, 1, 1, 20, 1])
+        self.Q = np.diag([15, 1, 50, 15, 1, 50, 80, 1])  # 決定
+        self.R = np.diag([50, 50, 1])  # 決定版
+
+        self.P, self.K, self.E = self.lqr(
+            self.A, self.Bl, self.Q, self.R)  # このKはMatlabの結果通りになってる
+
+    # lqr法
+    def lqr(self, A, B, Q, R):
+        P = linalg.solve_continuous_are(A, B, Q, R)  # Ricatti方程式を解いてる?
+        K = linalg.inv(R).dot(B.T).dot(P)
+        E = linalg.eigvals(A - B.dot(K))
+
+        return P, K, E
 
     def set_dt(self, dt):
         self.dt = dt
@@ -119,33 +109,24 @@ class Lqr_Controller:
             ]
         )
 
-        q_div = q - q_ref
-        u = -np.dot(K, q_div)
+        q_div = q - self.q_ref
+        u = -np.dot(self.K, q_div)
         ad = u[2, 0]
-        #1/2にかかっているg不要かも
-        a = ad + g + (g/2)*(self.Euler[1]*self.Euler[1] +
-                             self.Euler[0]*self.Euler[0])
+        # 1/2にかかっているg不要かも
+        a = ad + self.g + (self.g/2)*(self.Euler[1]*self.Euler[1] +
+                                      self.Euler[0]*self.Euler[0])
         ac = a/100
-
-        # csvファイルにuの値を書き込む。
-        with open("u.csv", "a") as f:
-            writer = csv.writer(f)
-            writer.writerow(u)
 
         # nominal acceleraion
         self.input_acc = a
-        
+
         ox = u[1]
         oy = u[0]
         oz = -10*self.Euler[2]
-        
-        #ox = u[1]
-        #oy = u[0]
-        #oz = -1.1*self.Euler[2]
 
         # calculate input Body angular velocity
         self.input_Wb = np.array([[ox], [oy], [oz]], dtype=object)
 
-        print(self.P,self.Euler,self.V)
+        print(self.P, self.Euler, self.V)
 
         return self.input_acc, self.input_Wb
