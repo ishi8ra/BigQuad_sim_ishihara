@@ -1,6 +1,8 @@
 import numpy as np
 from tools.Mathfunction import Mathfunction as MF
 from scipy import linalg
+from control.matlab import ctrb
+from numpy.linalg import matrix_rank
 
 
 class Lqr_Controller:
@@ -13,19 +15,24 @@ class Lqr_Controller:
         self.input_acc = 0.0
         self.input_Wb = np.zeros(3)
         # 初期設定
-        self.r = 2 / 3  # r(λ)=2/3Lp 長:0.3m
+        Lp = 0.3  # 振子の全長 [m]
+        r = (2/3)*Lp  # r(λ)=2/3Lp 長:0.3m
         self.g = 9.8  # 重力加速度
 
         self.A = np.array(
             [
-                [0, 1, 0, 0, 0, 0, 0, 0],
-                [0, 0, self.g, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 1, 0, 0, 0],
-                [0, 0, 0, 0, 0, -self.g, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 1],
-                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, self.g, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, self.g/r, 0, -self.g/r, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, -self.g, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, self.g/r, 0, -self.g/r, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             ]
         )
 
@@ -33,7 +40,11 @@ class Lqr_Controller:
             [
                 [0, 0, 0],
                 [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
                 [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0],
                 [0, 1, 0],
@@ -43,22 +54,27 @@ class Lqr_Controller:
         )
 
         # 目標値の設定（7行目が目標の高さz）
-        self.q_ref = np.array([[0], [0], [0], [0], [0], [0], [0.5], [0]])
+        self.q_ref = np.array([[0], [0], [0], [0], [0], [0], [
+            0], [0], [0], [0], [0.5], [0]])
 
         # 重みの決定   [x  xd  β  y  yd γ  z  zd]
-        # Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
-        # Q = np.diag([1, 1, 1, 1, 1, 1, 1, 1])
-        # Q = np.diag([5, 1, 1, 5, 1, 1, 8, 1])
-        # Q = np.diag([5, 1, 1, 5, 1, 1, 150, 1])
+        self.Q = np.diag([15, 1, 1, 1, 50, 15, 1, 1, 1, 50, 80, 1])  # 振子有り
+        self.R = np.diag([50, 50, 1])  # 振子有り
 
-        # 重み 決定版
-        # Q = np.diag([10, 1, 15, 10, 1, 15, 50, 1])
-        # Q = np.diag([5, 1, 1, 5, 1, 1, 20, 1])
-        self.Q = np.diag([15, 1, 50, 15, 1, 50, 80, 1])  # 決定
-        self.R = np.diag([50, 50, 1])  # 決定版
+        # 可制御性の判定
+        # C = ctrb(self.A, self.Bl)
+        # if matrix_rank(C) == len(self.A):
+        #     print("The system is controllable")
+        #     print("rankC = ", matrix_rank())
+        #     print("lenA = ", len(self.A))
+        # else:
+        #     print("可制御でない")
+        #     print("====================================")
+        #     print(C)
+        #     print(matrix_rank(C))
+        #     print(len(self.A))
 
-        self.P, self.K, self.E = self.lqr(
-            self.A, self.Bl, self.Q, self.R)  # このKはMatlabの結果通りになってる
+        self.P, self.K, self.E = self.lqr(self.A, self.Bl, self.Q, self.R)
 
     # lqr法
     def lqr(self, A, B, Q, R):
@@ -86,6 +102,8 @@ class Lqr_Controller:
         Euler=np.array([0.0, 0.0, 0.0]),
         Wb=np.array([0.0, 0.0, 0.0]),
         Euler_rate=np.array([0.0, 0.0, 0.0]),
+        Pendulum_angle=np.array([0.0, 0.0]),
+        Pendulum_angle_V=np.array([0.0, 0.0]),
         mode="position",
     ):
         self.Pref = P
@@ -94,15 +112,21 @@ class Lqr_Controller:
         self.Eulerref = Euler
         self.Wbref = Wb
         self.Euler_rateref = Euler_rate
+        self.Pendulum_angle = Pendulum_angle
+        self.Pendulum_angle_V = Pendulum_angle_V
 
     def controller(self):
         q = np.array(
             [
                 [self.P[0]],
                 [self.V[0]],
+                [self.Pendulum_angle[0]],
+                [self.Pendulum_angle_V[0]],
                 [self.Euler[1]],
                 [self.P[1]],
                 [self.V[1]],
+                [self.Pendulum_angle[1]],
+                [self.Pendulum_angle_V[1]],
                 [self.Euler[0]],
                 [self.P[2]],
                 [self.V[2]],
